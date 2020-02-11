@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func NewWhmAPIViaRemoteSSH(username, keyFile, hostname string, port int) (WhmAPI, error) {
+func NewRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (WhmAPI, error) {
 	creds, err := SSHKeyfileInsecureRemote(username, keyFile)
 	if err != nil {
 		return WhmAPI{}, err
