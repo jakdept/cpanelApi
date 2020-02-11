@@ -33,7 +33,10 @@ func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error
 	}, nil
 }
 
-func Connect(proto, host string, port int, creds ssh.ClientConfig) (*ssh.Session, error) {
+// whmapi1 fetch_service_ssl_components parse out certificate
+// https://documentation.cpanel.net/display/DD/WHM+API+1+Functions+-+fetch_service_ssl_components
+
+func Connect(proto, host string, port int, creds ssh.ClientConfig) (string, error) {
 	conn, err := ssh.Dial(proto, fmt.Sprintf("%s:%d", host, port), &creds)
 	if err != nil {
 		return nil, err
@@ -43,7 +46,16 @@ func Connect(proto, host string, port int, creds ssh.ClientConfig) (*ssh.Session
 		conn.Close()
 		return nil, err
 	}
-	return session, nil
+	output, err := session.Output("whmapi1 create_user_session --output=json user=root service=whostmgrd")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	token, err := parseUserSessionOutput(output)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return token, nil
 }
 
 var keyfile *string = kingpin.Flag("keyfile", "location to ssh key").Default("/root/.ssh/id_rsa").String()
