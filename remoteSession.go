@@ -1,14 +1,18 @@
 package cpanel
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/cookiejar"
 
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/net/publicsuffix"
 )
 
-func NewRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (WhmAPI, error) {
+func NewInsecureRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (WhmAPI, error) {
 	creds, err := SSHKeyfileInsecureRemote(username, keyFile)
 	if err != nil {
 		return WhmAPI{}, err
@@ -29,6 +33,7 @@ func NewRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (WhmAPI, e
 	cmd += " --output=json"
 	cmd += " user=root"
 	cmd += " service=whostmgrd"
+	cmd += " preferred_domain=" + hostname
 
 	output, err := session.Output(cmd)
 	if err != nil {
@@ -40,10 +45,24 @@ func NewRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (WhmAPI, e
 		return WhmAPI{}, err
 	}
 
-	return WhmAPI{
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		return WhmAPI{}, err
+	}
+
+	api := WhmAPI{
 		hostname: hostname,
 		token:    token,
-	}, nil
+		client: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+			Jar: jar,
+		},
+	}
+	return api, nil
 }
 
 func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error) {
