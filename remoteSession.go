@@ -8,8 +8,42 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func NewRemoteWhmAPI() WhmAPI {
-	return WhmAPI{}
+func NewWhmAPIViaRemoteSSH(username, keyFile, hostname string, port int) (WhmAPI, error) {
+	creds, err := SSHKeyfileInsecureRemote(username, keyFile)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port), &creds)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+	session, err := conn.NewSession()
+	if err != nil {
+		conn.Close()
+		return WhmAPI{}, err
+	}
+
+	cmd := "whmapi1"
+	cmd += " create_user_session"
+	cmd += " --output=json"
+	cmd += " user=root"
+	cmd += " service=whostmgrd"
+
+	output, err := session.Output(cmd)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+
+	token, err := parseUserSessionOutput(output)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+
+	return WhmAPI{
+		hostname: hostname,
+		token:    token,
+	}, nil
 }
 
 func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error) {
@@ -33,28 +67,6 @@ func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // nolint
 	}, nil
-}
-
-func Connect(proto, host string, port int, creds ssh.ClientConfig) (string, error) {
-	conn, err := ssh.Dial(proto, fmt.Sprintf("%s:%d", host, port), &creds)
-	if err != nil {
-		return "", err
-	}
-	session, err := conn.NewSession()
-	if err != nil {
-		conn.Close()
-		return "", err
-	}
-	output, err := session.Output("whmapi1 create_user_session --output=json user=root service=whostmgrd")
-	if err != nil {
-		return "", err
-	}
-
-	token, err := parseUserSessionOutput(output)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
 }
 
 func parseUserSessionOutput(output []byte) (string, error) {
