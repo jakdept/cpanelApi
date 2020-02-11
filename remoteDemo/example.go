@@ -39,21 +39,21 @@ func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error
 func Connect(proto, host string, port int, creds ssh.ClientConfig) (string, error) {
 	conn, err := ssh.Dial(proto, fmt.Sprintf("%s:%d", host, port), &creds)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	session, err := conn.NewSession()
 	if err != nil {
 		conn.Close()
-		return nil, err
+		return "", err
 	}
 	output, err := session.Output("whmapi1 create_user_session --output=json user=root service=whostmgrd")
 	if err != nil {
-		log.Fatalln(err)
+		return "", err
 	}
 
 	token, err := parseUserSessionOutput(output)
 	if err != nil {
-		log.Fatalln(err)
+		return "", err
 	}
 	return token, nil
 }
