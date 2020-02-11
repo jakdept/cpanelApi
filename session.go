@@ -1,19 +1,20 @@
-package cpapi
+package cpanel
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
-type CpanelApi struct {
-	url    url.URL
-	domain string
+type WhmAPI struct {
+	hostname   string
+	sessionKey string
 }
 
-func NewLocalApi() CpanelApi {
-	session := CpanelApi{
-		url: net.URL{
-			Host: "https://hostname.example.com:2087"
-			Path: "/cpsess##########/json-api/accountsummary?api.version=1&user=username"
-
-
+func (a WhmAPI) GenerateURL(endpoint string) url.URL {
+	return url.URL{
+		Scheme:   "https",
+		Host:     a.hostname + ":2087",
+		Path:     fmt.Sprintf("/%s/json-api/%s", a.sessionKey, endpoint),
+		RawQuery: "?api.version=1",
 	}
-
 }
