@@ -52,6 +52,20 @@ var proto *string = kingpin.Flag("tcp", "ssh network protocol").Default("tcp").S
 var host *string = kingpin.Flag("host", "remote ssh host").Default("localhost").String()
 var port *int = kingpin.Flag("port", "remote ssh port").Default("22").Int()
 
+func parseUserSessionOutput(output []byte) (string, error) {
+	unmarshalObject := struct {
+		Data struct {
+			Token string `json:"data"`
+		}
+	}{}
+
+	err := json.Unmarshal(output, &unmarshalObject)
+	if err != nil {
+		return "", err
+	}
+	return unmarshalObject.Data.Token, nil
+}
+
 func main() {
 	_ = kingpin.Parse()
 
@@ -64,21 +78,15 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	output, err := conn.Output("whmapi1 create_user_session --output=json user=root service=whostmgrd")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	unmarshalObject := struct {
-		Data struct {
-			Token string `json:"data"`
-		}
-	}{}
-
-	err = json.Unmarshal(output, &unmarshalObject)
+	token, err := parseUserSessionOutput(output)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("token: %s\n", unmarshalObject.Data.Token)
+
+	_ = token
 }
