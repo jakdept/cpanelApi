@@ -86,19 +86,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	conn, err := Connect(*proto, *host, *port, creds)
+	token, err := Connect(*proto, *host, *port, creds)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	output, err := conn.Output("whmapi1 create_user_session --output=json user=root service=whostmgrd")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	token, err := parseUserSessionOutput(output)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	_ = token
+	fmt.Printf("cpapi token: %s\n", token)
 }
