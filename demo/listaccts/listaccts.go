@@ -25,5 +25,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(accounts)
+	fmt.Println("All accounts on server:")
+	for _, each := range accounts {
+		fmt.Println(each)
+	}
 }

@@ -21,9 +21,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	accounts, err := api.ListResellers()
+	resellers, err := api.ListResellers()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(accounts)
+
+	fmt.Println("All resellers on server:")
+	for _, each := range resellers {
+		fmt.Println(each)
+	}
 }
