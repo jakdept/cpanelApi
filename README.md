@@ -3,7 +3,6 @@ Golang cPanel API bindings
 
 A few demo examples:
 
-> `demo/listaccts`
 
 ```bash
 jhayhurst@jack:~/Downloads|⇒  GOOS=linux GOARCH=amd64 go build github.com/jakdept/cpapi/demo/listresellers
