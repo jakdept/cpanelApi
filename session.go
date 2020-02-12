@@ -99,3 +99,30 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 	}
 	return userlist, nil
 }
+
+func (a *WhmAPI) ListResellers() ([]string, error) {
+	client, url := a.GenerateURL("listresellers")
+	params := url.Query()
+	params.Add("want", "user")
+	url.RawQuery = params.Encode()
+
+	request, err := http.NewRequest(http.MethodGet, url.String(), nil)
+	if err != nil {
+		return []string{}, err
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var outputData struct {
+		Resellers []string `json:"reseller"`
+	}
+
+	err = json.NewDecoder(response.Body).Decode(&outputData)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return outputData.Resellers, nil
+}
