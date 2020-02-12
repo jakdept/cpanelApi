@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/alecthomas/kingpin"
-	cpanel "github.com/jakdept/cpapi"
+	cpanel "github.com/jakdept/cpanelApi"
 )
 
 var keyfile *string = kingpin.Flag("keyfile", "location to ssh key").Default("/root/.ssh/id_rsa").String()
