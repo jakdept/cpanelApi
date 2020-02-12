@@ -40,7 +40,7 @@ func NewInsecureRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (W
 		return WhmAPI{}, err
 	}
 
-	token, err := parseUserSessionOutput(output)
+	activate, token, err := parseUserSessionOutput(output)
 	if err != nil {
 		return WhmAPI{}, err
 	}
@@ -56,12 +56,24 @@ func NewInsecureRemoteSSHWhmAPI(username, keyFile, hostname string, port int) (W
 		client: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
+					InsecureSkipVerify: true, //nolint
 				},
 			},
 			Jar: jar,
 		},
 	}
+
+	req, err := http.NewRequest(http.MethodPost, activate, nil)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+
+	resp, err := api.client.Do(req)
+	if err != nil {
+		return WhmAPI{}, err
+	}
+	resp.Body.Close()
+
 	return api, nil
 }
 
@@ -88,16 +100,17 @@ func SSHKeyfileInsecureRemote(username, keyFile string) (ssh.ClientConfig, error
 	}, nil
 }
 
-func parseUserSessionOutput(output []byte) (string, error) {
-	unmarshalObject := struct {
+func parseUserSessionOutput(output []byte) (string, string, error) {
+	var unmarshalObject struct {
 		Data struct {
-			Token string `json:"data"`
+			Activate string `json:"url"`
+			Token    string `json:"cp_security_token"`
 		}
-	}{}
+	}
 
 	err := json.Unmarshal(output, &unmarshalObject)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return unmarshalObject.Data.Token, nil
+	return unmarshalObject.Data.Activate, unmarshalObject.Data.Token, nil
 }

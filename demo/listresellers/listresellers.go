@@ -21,7 +21,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	accounts, err := api.ListAccounts()
+	accounts, err := api.ListResellers()
 	if err != nil {
 		log.Fatalln(err)
 	}

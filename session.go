@@ -16,14 +16,13 @@ type WhmAPI struct {
 
 // TODO figure out how to standardize ssh.Session and exec.Command
 
-func (a *WhmAPI) GenerateURL(endpoint string) (*http.Client, url.URL) {
-	return a.client,
-		url.URL{
-			Scheme:   "https",
-			Host:     a.hostname + ":2087",
-			Path:     fmt.Sprintf("/%s/json-api/%s", a.token, endpoint),
-			RawQuery: "api.version=1",
-		}
+func (a *WhmAPI) GenerateURL(endpoint string) url.URL {
+	return url.URL{
+		Scheme:   "https",
+		Host:     a.hostname + ":2087",
+		Path:     fmt.Sprintf("%s/json-api/%s", a.token, endpoint),
+		RawQuery: "api.version=1",
+	}
 }
 
 // Account represents a cPanel account
@@ -68,7 +67,7 @@ type Account struct {
 }
 
 func (a *WhmAPI) ListAccounts() ([]string, error) {
-	client, url := a.GenerateURL("listaccts")
+	url := a.GenerateURL("listaccts")
 	params := url.Query()
 	params.Add("want", "user")
 	url.RawQuery = params.Encode()
@@ -77,15 +76,17 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	response, err := client.Do(request)
+	response, err := a.client.Do(request)
 	if err != nil {
 		return []string{}, err
 	}
 
 	var outputData struct {
-		AccountList []struct {
-			Username string `json:"user"`
-		} `json:"acct"`
+		Data struct {
+			AccountList []struct {
+				Username string `json:"user"`
+			} `json:"acct"`
+		} `json:"data"`
 	}
 
 	err = json.NewDecoder(response.Body).Decode(&outputData)
@@ -94,14 +95,14 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 	}
 
 	userlist := []string{}
-	for _, account := range outputData.AccountList {
+	for _, account := range outputData.Data.AccountList {
 		userlist = append(userlist, account.Username)
 	}
 	return userlist, nil
 }
 
 func (a *WhmAPI) ListResellers() ([]string, error) {
-	client, url := a.GenerateURL("listresellers")
+	url := a.GenerateURL("listresellers")
 	params := url.Query()
 	params.Add("want", "user")
 	url.RawQuery = params.Encode()
@@ -110,13 +111,15 @@ func (a *WhmAPI) ListResellers() ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	response, err := client.Do(request)
+	response, err := a.client.Do(request)
 	if err != nil {
 		return []string{}, err
 	}
 
 	var outputData struct {
-		Resellers []string `json:"reseller"`
+		Data struct {
+			Resellers []string `json:"reseller"`
+		} `json:"data"`
 	}
 
 	err = json.NewDecoder(response.Body).Decode(&outputData)
@@ -124,5 +127,5 @@ func (a *WhmAPI) ListResellers() ([]string, error) {
 		return []string{}, err
 	}
 
-	return outputData.Resellers, nil
+	return outputData.Data.Resellers, nil
 }
