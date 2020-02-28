@@ -2,28 +2,9 @@ package cpanel
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 )
-
-type WhmAPI struct {
-	hostname string
-	token    string
-	client   *http.Client
-}
-
-// TODO figure out how to standardize ssh.Session and exec.Command
-
-func (a *WhmAPI) GenerateURL(endpoint string) url.URL {
-	return url.URL{
-		Scheme:   "https",
-		Host:     a.hostname + ":2087",
-		Path:     fmt.Sprintf("%s/json-api/%s", a.token, endpoint),
-		RawQuery: "api.version=1",
-	}
-}
 
 // Account represents a cPanel account
 type Account struct {
@@ -67,7 +48,10 @@ type Account struct {
 }
 
 func (a *WhmAPI) ListAccounts() ([]string, error) {
-	url := a.GenerateURL("listaccts")
+	url, err := a.GenerateURL("listaccts")
+	if err != nil {
+		return []string{}, err
+	}
 	params := url.Query()
 	params.Add("want", "user")
 	url.RawQuery = params.Encode()
@@ -102,7 +86,10 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 }
 
 func (a *WhmAPI) ListResellers() ([]string, error) {
-	url := a.GenerateURL("listresellers")
+	url, err := a.GenerateURL("listresellers")
+	if err != nil {
+		return []string{}, err
+	}
 	params := url.Query()
 	params.Add("want", "user")
 	url.RawQuery = params.Encode()

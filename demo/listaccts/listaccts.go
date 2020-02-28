@@ -16,7 +16,17 @@ var port *int = kingpin.Flag("port", "remote ssh port").Default("22").Int()
 func main() {
 	_ = kingpin.Parse()
 
-	api, err := cpanel.NewInsecureRemoteSSHWhmAPI(*username, *keyfile, *host, *port)
+	api, err := cpanel.NewWhmApi(*host)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	sshConfig, err := cpanel.InsecureSSHKeyfileConfig(*username, *keyfile)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = api.SSHSessionAuthenticate(*host, *port, sshConfig)
 	if err != nil {
 		log.Fatalln(err)
 	}
