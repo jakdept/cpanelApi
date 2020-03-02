@@ -36,8 +36,6 @@ type WhmAPI struct {
 	client   *http.Client
 }
 
-// TODO: figure out how to standardize ssh.Session and exec.Command
-
 func (a *WhmAPI) GenerateURL(endpoint string) (url.URL, error) {
 	if a.token == nil {
 		return url.URL{}, errors.New("whm api endpoint not activated")
@@ -82,6 +80,5 @@ func (a *WhmAPI) Call(
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
