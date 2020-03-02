@@ -137,6 +137,7 @@ func InsecureSSHKeyfileConfig(username, keyFile string) (ssh.ClientConfig, error
 	}, nil
 }
 
+// TODO: this
 // https://documentation.cpanel.net/display/DD/Guide+to+API+Authentication+-+API+Tokens+in+WHM
 // func (a *WhmAPI) APIKeyAuthenticate(key, domain string) {
 // 	// set up the required object for apikey based authentication
@@ -148,6 +149,7 @@ func InsecureSSHKeyfileConfig(username, keyFile string) (ssh.ClientConfig, error
 // 	}
 // }
 
+// TODO: this - maybe create a session from this then auth with that session?
 // https://documentation.cpanel.net/display/DD/Guide+to+API+Authentication+-+Username+and+Password+Authentication
 // func (a *WhmAPI) UserAuthenticate(username, password, domain string) {
 // 	// set up the required object for user based authentication
