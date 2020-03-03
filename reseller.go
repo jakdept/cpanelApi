@@ -27,3 +27,18 @@ func (a *WhmAPI) ListResellers() ([]string, error) {
 
 	return outputData.Data.Resellers, nil
 }
+
+type Reseller struct {
+	User     string    `json:"user"`
+	Accounts []Account `json:"acct"`
+
+	BandwidthUsed        *NumericLimit `json:"totalbwused,omitempty"`
+	BandwidthAlloc       *NumericLimit `json:"totalbwalloc,omitempty"`
+	BandwidthLimit       *NumericLimit `json:"bandwidthlimit,omitempty"`
+	BandwidthOverSelling *NumericLimit `json:"bwoverselling,omitempty"`
+
+	DiskUsed        *NumericLimit `json:"diskused,omitempty"`
+	DiskAlloc       *NumericLimit `json:"totaldiskalloc,omitempty"`
+	DiskLimit       *NumericLimit `json:"diskquota,omitempty"`
+	DiskOverselling *NumericLimit `json:"diskoverselling,omitempty"`
+}

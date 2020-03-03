@@ -104,7 +104,7 @@ func (l *NumericLimit) MarshalJSON() ([]byte, error) {
 func (l *NumericLimit) UnmarshalJSON(v []byte) error {
 	s := string(v)
 	s = strings.Trim(s, "\"")
-	if s == "unlimited" {
+	if s == "unlimited" || s == "0" {
 		l.unlimited = true
 		l.value = 0
 		return nil

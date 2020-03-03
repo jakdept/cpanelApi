@@ -8,14 +8,14 @@ import (
 
 // Account represents a cPanel account
 type Account struct {
-	Username     string
-	Domain       string
-	ContactEmail string
+	Username      string `json:"user,omitempty"`
+	PrimaryDomain string `json:"domain,omitempty"`
+	ContactEmail  string
 
 	Reseller      string
 	HomePartition string
 	Shell         string
-	Package       string
+	Package       string `json:"package"`
 	Theme         string
 
 	BackupsEnabled        bool
@@ -41,10 +41,12 @@ type Account struct {
 	MaxDatabases    string
 	MaxSubdomains   string
 
-	DiskLimit  int
-	DiskUsed   int
-	InodeLimit int
-	InodeUsed  int
+	BandwidthLimit *NumericLimit `json:"bandwidthlimit,omitempty"`
+	BandwidthUsed  *NumericLimit `json:"bandwidthused,omitempty"`
+	DiskLimit      *NumericLimit `json:"diskquota,omitempty"`
+	DiskUsed       *NumericLimit `json:"diskused,omitempty"`
+	InodeLimit     *NumericLimit `json:"inodequota,omitempty"`
+	InodeUsed      *NumericLimit `json:"inodeused,omitempty"`
 }
 
 func (a *WhmAPI) ListAccounts() ([]string, error) {
