@@ -1,7 +1,6 @@
 package cpanel
 
 import (
-	"encoding/json"
 	"net"
 	"net/http"
 	"net/url"
@@ -49,23 +48,6 @@ type Account struct {
 }
 
 func (a *WhmAPI) ListAccounts() ([]string, error) {
-	url, err := a.GenerateURL("listaccts")
-	if err != nil {
-		return []string{}, err
-	}
-	params := url.Query()
-	params.Add("want", "user")
-	url.RawQuery = params.Encode()
-
-	request, err := http.NewRequest(http.MethodGet, url.String(), nil)
-	if err != nil {
-		return []string{}, err
-	}
-	response, err := a.client.Do(request)
-	if err != nil {
-		return []string{}, err
-	}
-
 	var outputData struct {
 		Data struct {
 			AccountList []struct {
@@ -74,7 +56,16 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 		} `json:"data"`
 	}
 
-	err = json.NewDecoder(response.Body).Decode(&outputData)
+	queryParams := url.Values{}
+	queryParams.Add("want", "user")
+
+	err := a.Call(
+		http.MethodGet,
+		"listaccts",
+		queryParams,
+		&outputData,
+	)
+
 	if err != nil {
 		return []string{}, err
 	}
@@ -84,27 +75,4 @@ func (a *WhmAPI) ListAccounts() ([]string, error) {
 		userlist = append(userlist, account.Username)
 	}
 	return userlist, nil
-}
-
-func (a *WhmAPI) ListResellers() ([]string, error) {
-	var outputData struct {
-		Data struct {
-			Resellers []string `json:"reseller"`
-		} `json:"data"`
-	}
-	queryParams := url.Values{}
-	queryParams.Add("want", "user")
-
-	err := a.Call(
-		http.MethodGet,
-		"listresellers",
-		queryParams,
-		&outputData,
-	)
-
-	if err != nil {
-		return []string{}, err
-	}
-
-	return outputData.Data.Resellers, nil
 }
