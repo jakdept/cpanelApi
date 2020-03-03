@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strconv"
+	"strings"
 
 	"golang.org/x/net/publicsuffix"
 )
@@ -80,5 +82,39 @@ func (a *WhmAPI) Call(
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+type NumericLimit struct {
+	value     int
+	unlimited bool
+}
+
+func (l *NumericLimit) String() string {
+	if l.unlimited {
+		return "unlimited"
+	}
+	return strconv.Itoa(l.value)
+}
+
+func (l *NumericLimit) MarshalJSON() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
+func (l *NumericLimit) UnmarshalJSON(v []byte) error {
+	s := string(v)
+	s = strings.Trim(s, "\"")
+	if s == "unlimited" {
+		l.unlimited = true
+		l.value = 0
+		return nil
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("value is not a limit: %w", err)
+	}
+	l.value = i
+	l.unlimited = false
 	return nil
 }
