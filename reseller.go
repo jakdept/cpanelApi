@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func (a *WhmAPI) ListResellers() ([]string, error) {
+func (a *WhmAPI) ListResellerNames() ([]string, error) {
 	var outputData struct {
 		Data struct {
 			Resellers []string `json:"reseller"`
@@ -41,4 +41,30 @@ type Reseller struct {
 	DiskAlloc       *NumericLimit `json:"totaldiskalloc,omitempty"`
 	DiskLimit       *NumericLimit `json:"diskquota,omitempty"`
 	DiskOverselling *NumericLimit `json:"diskoverselling,omitempty"`
+}
+
+func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
+	var outputData struct {
+		Data Reseller `json:"data"`
+	}
+	queryParams := url.Values{}
+	queryParams.Add("want", "user")
+
+	err := a.Call(
+		http.MethodGet,
+		"listresellers",
+		queryParams,
+		&outputData,
+	)
+
+	if err != nil {
+		return Reseller{}, err
+	}
+
+	for id := range outputData.Data.Accounts {
+		outputData.Data.Accounts[id].DiskLimit = outputData.Data.Accounts[id].AlternateDiskLimit
+	}
+
+	return outputData.Data, nil
+
 }
