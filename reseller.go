@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func (a *WhmAPI) ListResellerNames() ([]string, error) {
+func (a *WhmAPI) ListAllResellerNames() ([]string, error) {
 	var outputData struct {
 		Data struct {
 			Resellers []string `json:"reseller"`
@@ -48,7 +48,8 @@ func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
 		Data Reseller `json:"data"`
 	}
 	queryParams := url.Values{}
-	queryParams.Add("want", "user")
+	queryParams.Add("user", "reseller")
+	queryParams.Add("filter_deleted", "1")
 
 	err := a.Call(
 		http.MethodGet,
@@ -66,5 +67,6 @@ func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
 	}
 
 	return outputData.Data, nil
-
 }
+
+func (a *WhmAPI) ListResellerIps(reseller string)

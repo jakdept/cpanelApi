@@ -31,7 +31,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	resellers, err := api.ListResellerNames()
+	resellers, err := api.ListAllResellerNames()
 	if err != nil {
 		log.Fatalln(err)
 	}
