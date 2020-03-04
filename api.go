@@ -3,8 +3,8 @@ package cpanel
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -20,7 +20,11 @@ func NewWhmApi(hostname string) (*WhmAPI, error) {
 		return &WhmAPI{}, err
 	}
 
+	// trim off any port numbers and change it to WHM's secure port
+	hostname = net.JoinHostPort(strings.Split(hostname, ":")[0], "2087")
+
 	return &WhmAPI{
+		hostname: &hostname,
 		client: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -38,18 +42,6 @@ type WhmAPI struct {
 	client   *http.Client
 }
 
-func (a *WhmAPI) GenerateURL(endpoint string) (url.URL, error) {
-	if a.token == nil {
-		return url.URL{}, errors.New("whm api endpoint not activated")
-	}
-	return url.URL{
-		Scheme:   "https",
-		Host:     *a.hostname + ":2087",
-		Path:     fmt.Sprintf("%s/json-api/%s", *a.token, endpoint),
-		RawQuery: "api.version=1",
-	}, nil
-}
-
 func (a *WhmAPI) Call(
 	method string,
 	endpoint string,
@@ -60,7 +52,7 @@ func (a *WhmAPI) Call(
 	args["api.version"] = []string{"1"}
 	url := url.URL{
 		Scheme:   "https",
-		Host:     *a.hostname + ":2087",
+		Host:     *a.hostname,
 		RawQuery: args.Encode(),
 	}
 	if a.token != nil {
