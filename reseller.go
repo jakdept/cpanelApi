@@ -29,28 +29,30 @@ type Reseller struct {
 	User     string    `json:"user"`
 	Accounts []Account `json:"acct"`
 
-	BandwidthUsed        *NumericLimit `json:"totalbwused,omitempty"`
-	BandwidthAlloc       *NumericLimit `json:"totalbwalloc,omitempty"`
-	BandwidthLimit       *NumericLimit `json:"bandwidthlimit,omitempty"`
-	BandwidthOverSelling *NumericLimit `json:"bwoverselling,omitempty"`
+	BandwidthUsed        *IntLimit `json:"totalbwused,omitempty"`
+	BandwidthAlloc       *IntLimit `json:"totalbwalloc,omitempty"`
+	BandwidthLimit       *IntLimit `json:"bandwidthlimit,omitempty"`
+	BandwidthOverSelling *CpBool   `json:"bwoverselling,omitempty"`
 
-	DiskUsed        *NumericLimit `json:"diskused,omitempty"`
-	DiskAlloc       *NumericLimit `json:"totaldiskalloc,omitempty"`
-	DiskLimit       *NumericLimit `json:"diskquota,omitempty"`
-	DiskOverselling *NumericLimit `json:"diskoverselling,omitempty"`
+	DiskUsed        *FloatLimit `json:"diskused,omitempty"`
+	DiskAlloc       *IntLimit   `json:"totaldiskalloc,omitempty"`
+	DiskLimit       *IntLimit   `json:"diskquota,omitempty"`
+	DiskOverselling *CpBool     `json:"diskoverselling,omitempty"`
 }
 
-func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
+func (a *WhmAPI) ResellerUsers(reseller string) (Reseller, error) {
 	var outputData struct {
-		Data Reseller `json:"data"`
+		Data struct {
+			ResellerUser Reseller `json:"reseller"`
+		} `json:"data"`
 	}
 	queryParams := url.Values{}
-	queryParams.Add("user", "reseller")
+	queryParams.Add("user", reseller)
 	queryParams.Add("filter_deleted", "1")
 
 	err := a.Call(
 		http.MethodGet,
-		"listresellers",
+		"resellerstats",
 		queryParams,
 		&outputData,
 	)
@@ -59,9 +61,10 @@ func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
 		return Reseller{}, err
 	}
 
-	for id := range outputData.Data.Accounts {
-		outputData.Data.Accounts[id].DiskLimit = outputData.Data.Accounts[id].AlternateDiskLimit
+	for id := range outputData.Data.ResellerUser.Accounts {
+		outputData.Data.ResellerUser.Accounts[id].DiskLimit =
+			outputData.Data.ResellerUser.Accounts[id].AlternateDiskLimit
 	}
 
-	return outputData.Data, nil
+	return outputData.Data.ResellerUser, nil
 }

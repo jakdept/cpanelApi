@@ -41,13 +41,13 @@ type Account struct {
 	MaxDatabases    string
 	MaxSubdomains   string
 
-	BandwidthUsed      *NumericLimit `json:"bandwidthused,omitempty"`
-	BandwidthLimit     *NumericLimit `json:"bandwidthlimit,omitempty"`
-	DiskUsed           *NumericLimit `json:"diskused,omitempty"`
-	DiskLimit          *NumericLimit `json:"disklimit,omitempty"`
-	AlternateDiskLimit *NumericLimit `json:"diskquota,omitempty"`
-	InodeUsed          *NumericLimit `json:"inodeused,omitempty"`
-	InodeLimit         *NumericLimit `json:"inodequota,omitempty"`
+	BandwidthUsed      *FloatLimit `json:"bandwidthused,omitempty"`
+	BandwidthLimit     *FloatLimit `json:"bandwidthlimit,omitempty"`
+	DiskUsed           *FloatLimit `json:"diskused,omitempty"`
+	DiskLimit          *IntLimit   `json:"disklimit,omitempty"`
+	AlternateDiskLimit *IntLimit   `json:"diskquota,omitempty"`
+	InodeUsed          *IntLimit   `json:"inodeused,omitempty"`
+	InodeLimit         *IntLimit   `json:"inodequota,omitempty"`
 }
 
 func (a *WhmAPI) ListAccounts() ([]string, error) {

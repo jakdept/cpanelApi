@@ -1,0 +1,36 @@
+{
+	"data": {
+		"reseller": {
+			"acct": [
+				{
+					"bandwidthlimit": "0.00",
+					"bandwidthused": "0.00",
+					"deleted": 0,
+					"diskquota": 0,
+					"diskused": "99.84",
+					"domain": "whousescpanel.com",
+					"package": "default",
+					"suspended": null,
+					"user": "whousescpanel"
+				}
+			],
+			"bandwidthlimit": 0,
+			"bwoverselling": 0,
+			"diskoverselling": 0,
+			"diskquota": 0,
+			"diskused": 99.84,
+			"month": "3",
+			"totalbwalloc": 0,
+			"totalbwused": 0,
+			"totaldiskalloc": 0,
+			"user": "whousescpanel",
+			"year": "2020"
+		}
+	},
+	"metadata": {
+		"command": "resellerstats",
+		"reason": "OK",
+		"result": 1,
+		"version": 1
+	}
+}

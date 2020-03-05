@@ -20,7 +20,7 @@ func NewWhmApi(hostname string) (*WhmAPI, error) {
 		return &WhmAPI{}, err
 	}
 
-	// trim off any port numbers and change it to WHM's secure port
+	// trim off any port numbers and change it to WHM's port
 	hostname = net.JoinHostPort(strings.Split(hostname, ":")[0], "2087")
 
 	return &WhmAPI{
@@ -77,23 +77,47 @@ func (a *WhmAPI) Call(
 	return nil
 }
 
-type NumericLimit struct {
+type CpBool bool
+
+func (b *CpBool) String() string {
+	if *b {
+		return "1"
+	}
+	return "0"
+}
+
+func (b *CpBool) MarshalJSON() ([]byte, error) {
+	return []byte(b.String()), nil
+}
+
+func (b *CpBool) UnmarshalJSON(v []byte) error {
+	s := string(v)
+	s = strings.Trim(s, "\"")
+	if s == "1" {
+		*b = true
+	} else {
+		*b = false
+	}
+	return nil
+}
+
+type IntLimit struct {
 	value     int
 	unlimited bool
 }
 
-func (l *NumericLimit) String() string {
+func (l *IntLimit) String() string {
 	if l.unlimited {
 		return "unlimited"
 	}
 	return strconv.Itoa(l.value)
 }
 
-func (l *NumericLimit) MarshalJSON() ([]byte, error) {
+func (l *IntLimit) MarshalJSON() ([]byte, error) {
 	return []byte(l.String()), nil
 }
 
-func (l *NumericLimit) UnmarshalJSON(v []byte) error {
+func (l *IntLimit) UnmarshalJSON(v []byte) error {
 	s := string(v)
 	s = strings.Trim(s, "\"")
 	if s == "unlimited" || s == "0" {
@@ -103,6 +127,40 @@ func (l *NumericLimit) UnmarshalJSON(v []byte) error {
 	}
 
 	i, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("value is not a limit: %w", err)
+	}
+	l.value = i
+	l.unlimited = false
+	return nil
+}
+
+type FloatLimit struct {
+	value     float64
+	unlimited bool
+}
+
+func (l *FloatLimit) String() string {
+	if l.unlimited {
+		return "unlimited"
+	}
+	return strconv.FormatFloat(l.value, 'f', 2, 64)
+}
+
+func (l *FloatLimit) MarshalJSON() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
+func (l *FloatLimit) UnmarshalJSON(v []byte) error {
+	s := string(v)
+	s = strings.Trim(s, "\"")
+	if s == "unlimited" || s == "0" {
+		l.unlimited = true
+		l.value = 0
+		return nil
+	}
+
+	i, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return fmt.Errorf("value is not a limit: %w", err)
 	}
