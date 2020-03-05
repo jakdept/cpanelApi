@@ -86,7 +86,7 @@ func RespondWithFile(pathPrefix string, notFoundCode int) http.Handler {
 			r.URL.Path,
 			filename,
 		)
-		color.Cyan("opening %s\n", filename)
+		color.Cyan("serving response from  %s\n", filename)
 
 		f, err := os.Open(filename)
 		if err != nil && os.IsNotExist(err) {
