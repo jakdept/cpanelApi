@@ -8,12 +8,39 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"testing"
 )
 
-var cpanelTestSrv httptest.Server
-var mux http.ServeMux
+func TestMain(m *testing.M) {
+	unauthHandler := RespondWithFile(
+		"testdata/testSrv/create_user_session",
+		http.StatusUnauthorized,
+	)
+	unauthHandler = http.StripPrefix("/create_user_session", unauthHandle)
+	unauthHandler = http.StripPrefix("/json-api/", unauthHandle)
 
+	authHandler := RespondWithFile(
+		"testdata/testSrv",
+		http.StatusNotFound,
+	)
+	authHandler = http.StripPrefix("/json-api/", unauthHandle)
+
+	handler := StripToken(authHandler, unauthHandler)
+	handler = StripApiVersion(handler)
+	testSrv = httptest.NewTLSServer(handler)
+
+	testWhmApi = WhmAPI{
+		hostname: &testSrv.URL,
+		token: &testAuthToken,
+		client: testSrv.Client,
+	}
+
+	os.Exit(m.Run())
+}
+
+var testSrv httptest.Server
 var testAuthToken = "/cpsess8675309"
+var testWhmApi WhmAPI
 
 // This handler checks for the API version and returns a 404 if not found.
 func StripApiVersion(h http.Handler) http.Handler {
@@ -45,11 +72,11 @@ func StripToken(authHandler http.Handler, unauthHandler http.Handler) http.Handl
 
 func RespondWithFile(pathPrefix string, notFoundCode int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		f, err := os.Open(filepath.Join(
-			strings.TrimPrefix(pathPrefix, "/"),
+		f, err := os.Open(strings.TrimPrefix(filepath.Join(
+			pathPrefix,
 			r.URL.Path,
 			r.URL.Query().Encode,
-		))
+		),"/")
 		if err != nil && os.IsNotExist(err) {
 			http.Error(w, notFoundCode, "")
 		} else if err != nil {
