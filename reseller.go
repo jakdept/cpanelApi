@@ -11,13 +11,10 @@ func (a *WhmAPI) ListAllResellerNames() ([]string, error) {
 			Resellers []string `json:"reseller"`
 		} `json:"data"`
 	}
-	queryParams := url.Values{}
-	queryParams.Add("want", "user")
-
 	err := a.Call(
 		http.MethodGet,
 		"listresellers",
-		queryParams,
+		url.Values{},
 		&outputData,
 	)
 
@@ -68,5 +65,3 @@ func (a *WhmAPI) ListResellerUsers(reseller string) (Reseller, error) {
 
 	return outputData.Data, nil
 }
-
-func (a *WhmAPI) ListResellerIps(reseller string)

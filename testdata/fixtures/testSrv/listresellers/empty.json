@@ -1,0 +1,13 @@
+{
+	"data": {
+		"reseller": [
+			"whousescpanel"
+		]
+	},
+	"metadata": {
+		"command": "listresellers",
+		"reason": "OK",
+		"result": 1,
+		"version": 1
+	}
+}
